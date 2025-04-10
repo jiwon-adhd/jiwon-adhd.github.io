@@ -113,52 +113,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     animateCards();
     
-    // 모바일 메뉴 토글
+    // 모바일 메뉴 토글 개선
     if (menuToggle) {
+        const navLinksContainer = document.querySelector('.nav-links');
         menuToggle.addEventListener('click', () => {
-            const navLinks = document.querySelector('.nav-links');
-            navLinks.classList.toggle('active');
-            
-            // 햄버거 아이콘 애니메이션
+            menuToggle.classList.toggle('active');
             const spans = menuToggle.querySelectorAll('span');
-            spans.forEach(span => {
-                span.classList.toggle('active');
+            spans.forEach(span => span.classList.toggle('active'));
+            navLinksContainer.classList.toggle('active');
+            
+            // 메뉴가 열려 있을 때 스크롤 방지
+            if (navLinksContainer.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // 메뉴 링크 클릭 시 모바일 메뉴 닫기
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                const spans = menuToggle.querySelectorAll('span');
+                spans.forEach(span => span.classList.remove('active'));
+                navLinksContainer.classList.remove('active');
+                document.body.style.overflow = '';
             });
         });
     }
 
-    // 부드러운 스크롤
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // 모바일 메뉴가 열려있을 경우 닫기
-            if (window.innerWidth <= 768) {
-                document.querySelector('.nav-links').classList.remove('active');
-                
-                // 햄버거 아이콘 리셋
-                const spans = menuToggle.querySelectorAll('span');
-                spans.forEach(span => {
-                    span.classList.remove('active');
-                });
-            }
-            
-            // 스크롤 이동
-            const targetId = link.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                const headerOffset = header.offsetHeight;
-                const targetPosition = targetElement.offsetTop - headerOffset;
-                
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
+    // 스크롤 최적화
+    const supportsPassive = () => {
+        let passive = false;
+        try {
+            const opts = Object.defineProperty({}, 'passive', {
+                get: function() { passive = true; return passive; }
+            });
+            window.addEventListener('testPassive', null, opts);
+            window.removeEventListener('testPassive', null, opts);
+        } catch (e) {}
+        return passive;
+    };
+    
+    // 터치 이벤트에 passive 속성 추가하여 스크롤 성능 향상
+    document.addEventListener('touchstart', function() {}, supportsPassive() ? { passive: true } : false);
+    document.addEventListener('touchmove', function() {}, supportsPassive() ? { passive: true } : false);
+    
     // 이미지 슬라이더 (리스팅)
     if (prevBtn && nextBtn) {
         const listingsSlider = document.querySelector('.listings-slider');
